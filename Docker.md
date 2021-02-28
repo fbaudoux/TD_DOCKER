@@ -225,13 +225,35 @@ Le fait d'avoir un dégradé un conteneur, ne m'empêche absolument d'en relance
 
 Les images sont importantes, les conteneurs, eux , sont sacrifiables
 
+D'accord mais si j'avais des données présentes dans le système de fichier de mon conteneur ? je ne vais pas les perdre si mon conteneur crashe?
+Pas si l'on utilise correctement les volumes docker.
+
+#### Lancer un conteneur en mappant un volume
+
+La syntaxe permettant de donner accès à un répertoire de votre machine depuis l'intérieur d'un conteneur se fait au lancement du conteneur.  
+La syntaxe est :
+
+```docker run -v "repertoire local":"repertoire dans le conteneur" nom_de_l_image```
+
+Dans le cas de notre busybox, cela donne quelque chose comme :
+
+```docker run -ti  -v "C:\Users\fred\busyboxdata":"/data" busybox```
+
+Si je lance mon conteneur avec cette ligne de commande, je constate qu'il y a un répertoire data accessible dans le conteneur.
+Je peux créer un fichier dans ce répertoire et quitter le conteneur.
+![image](uploads/95552be57f0eba4f02fc43e02ca8129e/image.png)
+
+Le fichier, lui, persiste sur ma machine
+![image](uploads/6e1c3c233f2b657249fc0263fdb632e9/image.png)
+ 
+Si je relance un conteneur, je vais retrouver mon fichier
+
+![image](uploads/c47339f051d1f3b933d7c5294ed056c3/image.png)
 
 
+#### Lancer un conteneur en mode daemon
 
-
-
-
-Passons à quelque chose de plus utile, nous allons démarrer un serveur Web sous docker.
+Jusqu'à présent, nous avons utilisés des conteneurs qui se terminaient d'eux même et qui ne faisaient pas grand chose. Il est temps de passer à des à quelque chose de plus utile, nous allons démarrer un serveur Web sous docker.
 Nous utiliserons le serveur Web NGINX.
 Rendons nous sur le site du docker hub et trouvons le nom de l'image d'un serveur NGINX.
 
