@@ -1,34 +1,47 @@
-#Docker
-
-Docker nous permet d'executer des applications localement sans avoir besoin de les installer.
-Il nous suffit de lui demander de lancer un conteneur pour cette application.
-
-* docker run hello-world
-
-Pour lancer ce conteneur, docker a besoin de l'image "hello-world", si il ne la trouve pas, il va la télécharger dans un repository.
-Le repository par défaut est appelé le docker hub. 
+Docker nous permet d'exécuter des applications sur une machine sans avoir besoin de les installer.
 
 
-![image](uploads/2400b429ab3182a4f2965db9f201737c/image.png)
+# Les bases
+
+Commençons comme tout bon informaticien par lancer le hello-world.
+Avec Docker cela revient à écrire quelque chose comme:
+
+```docker run hello-world```
+
+Cette commande demande au programme docker ( qui doit donc être installé sur la machine ) de démarrer un conteneur basé sur l'image hello-world
+
+Pour lancer ce conteneur, docker a donc besoin d'une image, ici "hello-world".  
+Si il ne la trouve pas, il va la télécharger dans un repository.
+Le repository par défaut est le docker hub. 
+
+![image](uploads/cbaaf588c60f85a85036219a2b26a3a9/image.png)
+
+Le docker hub dispose d'un site web qui permet de rechercher toutes les images mises à disposition.  
+https://hub.docker.com/
+
+Mais revenons à l'exécution de notre Hello world.
+![image](uploads/05ff35c9431efcc7e79351b86991b098/image.png)
 
 Si je lance une seconde fois, la même commande, que se passe t il ?
 
-![image](uploads/384165f469b44aa22b00925c44840274/image.png)
+![image](uploads/a8611931d06c20fc785a89853b4f3042/image.png)
+
 
 L'image n'est pas téléchargée à nouveau, cela signifie que Docker possède une liste d'images en local.
 
-Via docker info, on va savoir combien d'images différentes notre docker a à sa disposition
-* docker info  
-![image](uploads/2aafd09e9ff08ff5bb3ae54d2574a925/image.png)
+Nous pouvons savoir combien d'images différentes notre docker local a dans son cache :    
+```docker info``` 
 
-Si l'on veut voir la liste de toutes ces images, nous avons la commande:
-* docker images
+![image](uploads/d73a05276f71d1f95d9737fefc48e24e/image.png)
+
+Si l'on veut voir la liste de toutes ces images, nous avons la commande:  
+```docker images```
 
 Donc nous pouvons lancer toutes ces applications depuis notre machine sans avoir à les installer.
 
-Je peux également voir les conteneurs qui sont en cours d'execution sur ma machine en utilisant :
+Je peux également voir les conteneurs qui sont en cours d'exécution sur ma machine en utilisant :
 
-* docker ps
+```docker ps```
 
 __Manip1__ : Ou l'on comprend qu'une image est une définition statique
 
