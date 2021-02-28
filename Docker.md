@@ -323,13 +323,13 @@ Si le conteneur dispose d'un shell bash cela va fonctionner ( on peut aussi essa
 
 ![image](uploads/a819f97695e6b0069841f9925b2c020c/image.png)
 
-Par defaut, http va diffuser les fichiers qui se situent ici : /usr/local/apache2/htdocs
+Par défaut, http va diffuser les fichiers qui se situent ici : /usr/local/apache2/htdocs
 Il y a un fichier index.html, on peut l'éditer. .... non, il n'y a pas d'éditeur disponible sur le conteneur
 On peut créer un fichier en local et le copier dans le conteneur pour remplacer le fichier index.html
 
 ```docker cp "fichier local"   "id conteneur":"chemin fichier sur le conteneur"```
 
-Franchement, pour le développement ce n'est pas pratique.Je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
+Franchement, pour le développement ce n'est pas pratique. Je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
 
 De la même manière que l'on peut mapper un port de la machine hôte avec un port du conteneur, on peut mapper un répertoire de la machine hôte avec un répertoire du conteneur.
 
@@ -341,14 +341,61 @@ Cette fois cela fonctionne de façon assez pratique !
 
 ## Faire communiquer les conteneurs entre eux
 
+Pour communiquer de notre machine vers un conteneur Docker, on a vu que l'on devait mapper des ports et appeler notre conteneur via localhost ou 127.0.0.1.
+Mais alors si on lance plusieurs conteneurs sur notre machine, comment vont ils communiquer ensemble ?
+
+Pour que 2 conteneurs puissent communiquer ensemble, cela va se passer, comme souvent avec Docker, lors du lancement du conteneur
+
+Premièrement, il faut lancer un conteneur en lui donnant un nom grâce à l'option --name 
+
+Exemple :  
+
+docker run --name serveurhttp  -d httpd
+
+![image](uploads/0214740f5231c22ce0b545490be26dd9/image.png)
 
 
+Ensuite, si l'on veut lancer un conteneur qui doit pouvoir communiquer avec notre conteneur appelé serveurhttp, il faudra le lancer avec l'option --link serveurhttp:nom_du_lien
+
+Dans l'exemple ci-dessous, je lance un busybox qui peut dialoguer avec le serveur httpd via l'alias apache
+
+![image](uploads/c523cc3083b69c23b9f27fdede39ad25/image.png)
+
+De plus, même si mon conteneur httpd n'a pas le port 80 mappé sur localhost, mon conteneur busybox est quand même capable de l'appeler
+
+![image](uploads/f73348a1bf15a76ca62d4c5b768318e1/image.png)
+
+Il y a donc un réseau interne au fonctionnement de docker qui propose du DNS.
+L'étude du fonctionnement réseau de Docker sera par manque de temps hors du périmètre de ce td.
+ 
 ## Construire sa propre image Docker
+
+Pour construire sa propre image Docker, il faut créer un fichier de directives nommé Dockerfile
+
+Le Dockerfile précise une liste d'actions à réaliser les unes à la suite des autres permettant d'obtenir l'image que l'on veut.
+
+La première ligne du Dockerfile est du type :   
+```from : image_parent``` 
+
+on part toujours d'une image existante, qui contient juste les outils nécessaires à construire notre image
+
+Voici par exemple celle de Hello world
+![image](uploads/ba035eb4b42d5c14443f1c4255b83417/image.png)
+
+La première directive indique que l'image de base utilisée est __scratch__ , c'est à dire l'image la plus minimale que l'on puisse trouver.
+La seconde directive indique qu'il faut copier le fichier hello à la racine du système de fichier
+Le troisième directive indique que la commande qui sera lancée au démarrage d'un conteneur sera Hello
+
+
+Quelques directives intéressantes :    
+
+
+
 
 ## Manipuler plusieurs conteneurs à la fois grâce à compose
 
 Mapper les ports, mapper les volumes, préciser les liens de communication entre les conteneurs, ...
-Cela commence à faire à devenir un peu complexe surtout si l'on veut démarrer un ecosystème un peu élaboré ou l'on trouve par exemple : serveur web + serveur applicatif + base de données ....
+Cela commence à faire à devenir un peu complexe surtout si l'on veut démarrer un écosystème un peu élaboré ou l'on trouve par exemple : serveur web + serveur applicatif + base de données ....
 
 Docker a un outil prévu pour cela, il s'agit de docker-compose.
 Cet outil fonctionne avec un fichier de description docker-compose.yml
