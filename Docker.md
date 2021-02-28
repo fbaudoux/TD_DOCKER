@@ -99,6 +99,8 @@ Nous allons avoir besoin de creuser un peu plus cette notion de conteneur avant 
 
 ## Les conteneurs
 
+
+### Lister les conteneurs
 Je peux lister les images docker, je dois pouvoir lister les conteneurs qui sont issus de ces images.
 La commande qui permet de lister les conteneurs en cours d'exécution est :
 
@@ -144,80 +146,90 @@ Si l'analyse de logs ne suffit pas , on peut même redémarrer un conteneur stop
 
 Il est à noter que contrairement à ```docker run``` , ```docker start``` démarre un conteneur en mode daemon et on ne voit donc pas le résultat sur la sortie standard
 
+Pour voir le résultat sur la sortie standard, il faudra utiliser ```docker start -ai``` comme dans l'exemple ci-dessous.   
+
+![image](uploads/2c53ddb9f6fdc0447672f6a5728c8edd/image.png)
+
+### Supprimer les conteneurs
+
+On comprend bien l'intérêt de garder le conteneur pour faire des analyses après l'arrêt, mais il nous faut toutefois un moyen de faire le ménage.
+
+```docker rm ID_CONTENEUR``` va nous permettre de supprimer définitivement le conteneur
+
+On peut également décider au moment du lancement que le conteneur devra être supprimé dès qu'il s'arrête, en utilisant l'option --rm 
+
+```docker run --rm hello-world```
+
+On ne retrouve pas de trace de ce conteneur lorsque son exécution est terminée.
+Comme dans l'exemple ci-dessous.  
+
+![image](uploads/681d3c4af577d68e66d2b850061d322c/image.png)
+
+Je peux maintenant supprimer l'image Hello world
+
+![image](uploads/75c8b3001e149355abd69b049fe667da/image.png)
+
+
+### Manipuler les conteneurs
+
+#### Lancer un conteneur en mode terminal interactif
+
+Nous allons utiliser une image appelée busybox.
+Si on fait un ```docker run busybox```, on verra la même chose qu'avec le Hello World, un conteneur qui s'exécute puis se termine. 
+Mais en exécutant ensuite un ```docker ps -a```, on peut voir que la commande exectué par busybox est un shell ```sh```
+
+![image](uploads/e603d85759554ec33cbdb6269e7baa2b/image.png)
+
+Donc ce conteneur lance un ![image](uploads/63c2c199f0a5471b2a0d9e0a7e3b8ca7/image.png), nous pouvons interagir avec ce shell en utilisant la commande :
+```docker run -ti nom_de_l_image```  
+
+  ![image](uploads/07d429ebe1b10cc39ba7e327f37c9046/image.png)
+
+On se retrouve dans un shell qui est en cours d'exécution par notre conteneur busybox
+On peut donc lancer des commandes shell depuis ce terminal et on s'aperçoit que notre conteneur dispose de son propre système de fichiers !
+
+![image](uploads/302cc8c0400931d6ba8c246beb39e39c/image.png)
+
+Tant que nous sommes connectés à ce terminal, le conteneur reste en execution.
+Si j'ouvre une autre fenêtre de commande et que je demande ```docker ps``` , je vais voir l'execution de mon conteneur.
+
+![image](uploads/1b6e6e3eec1fec1eb0c791abf698c086/image.png)
+
+Si je quitte le shell via la commande ```exit```, le conteneur busybox va s'arrêter 
+
+je quitte 
+![image](uploads/40dba7d80530f093383f8850a947259c/image.png)
+
+le conteneur n'est plus en exécution
+![image](uploads/1c22c8bce64b0779b5de21384a66f1ab/image.png)
+
+#### Un conteneur fait partie du bétail (Pet vs Cattle)
+
+Nous venons de voir que l'on pouvait prendre la main dans un shell et que le conteneur avait son propre système de fichier. Donc on peut faire des bêtises dans ce système de fichier.
+Par exemple : 
+
+```docker run -ti busybox```
+```rm -rf bin ```
+```ls``` 
+
+![image](uploads/3d3bf992ae8158a7f1a574d3d65edc85/image.png)
+
+-> J'ai rendu notre conteneur complétement inutilisable, je n'ai plus qu'a quitter
+
+Le fait d'avoir un dégradé un conteneur, ne m'empêche absolument d'en relancer un parfaitement opérationnel 
+ 
+```docker run -ti busybox``` 
+```ls```
+
+![image](uploads/97c1ae5bedadb9602ad03d16dd9c4a73/image.png)
+
+Les images sont importantes, les conteneurs, eux , sont sacrifiables
 
 
 
-__Manip1__ : Ou l'on comprend qu'une image est une définition statique
-
-* docker run -ti busybox 
-* ls 
-* rm -rf bin 
-* ls 
-
--> Notre conteneur est inutilisable
-
-* exit 
-* docker run -ti busybox 
-* ls
 
 
-__Manip2__ : Ou l'on comprend qu'un conteneur arrêté n'est pas supprimé
 
-* docker ps -a  | grep busy
-
-On retrouve nos conteneurs busybox et on voit qu'ils sont arrêtés
-Mais on peut toujours accéder aux logs en faisant
-
-* docker logs "Id du conteneur"
-
-On comprend bien l'interet pour faire des analyses après l'arrêt d'un conteneur, mais il nous faut toutefois un moyen de faire le ménage.
-
-* docker rm "Id du conteneur" va nous permettre de supprimer définitivement le conteneur
-
-On peut également décider au moment du lancement que le conteneur devra être supprimé dès qu'il s'arrête
-
-* docker run -rm -ti busybox 
-* touch youpi.txt
-* exit
-
-On ne retrouve pas de trace de ce conteneur via docker ps.
-
-__Manip3__ : Ou l'on comprend que l'on peut créer une nouvelle image à partir d'un conteneur en cours d'execution
-
-* docker run -ti busybox
-* touch hello.txt
-
-dans un autre terminal:
-
-* docker ps
-![image](uploads/282e24bd3f6a42adeecc38b205cb7317/image.png)
-
-* docker diff "container id"
--> on voit les différences entre le conteneur et l'image sur laquelle il est basé
-
-* docker commit "container id" mybusybox
-* docker images 
-![image](uploads/136298577018f12f389391c8c266d430/image.png)
-
-* docker run -ti mybusybox
-* ls
-
-On a toujours notre fichier hello.txt
-
-Donc on peut se retrouver avec des dizaines d'images issues d'une même image originelle.
-On va avoir besoin d'un moyen de faire le ménage.
-
-* docker rmi "Id de l'image"
-
-__Manip4__ : Ou l'on découvre comment qu'un repository n'est pas obligatoire
-* docker save --output mybusybox.tar mybusybox
-* docker rmi mybusybox
-* docker images | grep busy
-* docker load --input mybusybox.tar
-* docker images | grep busy
-
-
-Nous aurons peut être besoin de cette façon de procéder si le rsx de l'IUT ne nous aide pas pour la suite de ce td :-) 
 
 Passons à quelque chose de plus utile, nous allons démarrer un serveur Web sous docker.
 Nous utiliserons le serveur Web NGINX.
@@ -437,4 +449,40 @@ Maintenant que vous savez lire un fichier docker-compose, vous trouverez l'URL q
 Vous serez également en mesure d'analyser les fichiers qui vous ont été fournis pour vos projets précédents et d'enfin les comprendre :-)  
 
 
- 
+## Utile à savoir 
+
+__Manip3__ : Ou l'on comprend que l'on peut créer une nouvelle image à partir d'un conteneur en cours d'execution
+
+* docker run -ti busybox
+* touch hello.txt
+
+dans un autre terminal:
+
+* docker ps
+![image](uploads/282e24bd3f6a42adeecc38b205cb7317/image.png)
+
+* docker diff "container id"
+-> on voit les différences entre le conteneur et l'image sur laquelle il est basé
+
+* docker commit "container id" mybusybox
+* docker images 
+![image](uploads/136298577018f12f389391c8c266d430/image.png)
+
+* docker run -ti mybusybox
+* ls
+
+On a toujours notre fichier hello.txt
+
+Donc on peut se retrouver avec des dizaines d'images issues d'une même image originelle.
+On va avoir besoin d'un moyen de faire le ménage.
+
+* docker rmi "Id de l'image"
+
+__Manip4__ : Ou l'on découvre comment qu'un repository n'est pas obligatoire
+* docker save --output mybusybox.tar mybusybox
+* docker rmi mybusybox
+* docker images | grep busy
+* docker load --input mybusybox.tar
+* docker images | grep busy
+
+
