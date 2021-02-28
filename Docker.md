@@ -83,18 +83,19 @@ La syntaxe pour la suppression d'une image :
 
 ```docker rmi IMAGE ID```
 
-D'ailleurs l'image de Hello World ne m'est plus utile, je veux la supprimer
+D'ailleurs l'image de Hello World ne m'est plus utile, je veux la supprimer  
 
-```docker images Hello*```   , pour récuperer l' ID
+```docker images Hello*```   , pour récuperer l' ID  
 ![image](uploads/68a2146e9495563f0faefee418c9ed62/image.png)
 
 
-```docker rmi XXXXXXXXX``` pour la suppression  
+```docker rmi XXXXXXXXX``` pour la suppression    
 
 ![image](uploads/cb51d1dd8a5f338bdf1a8bfef9c21cc1/image.png)
 
 
-
+Non seulement, Docker ne veut pas me supprimer l'image mais en plus il me dit que cette image est utilisée par conteneur qui est stoppé !!  
+Nous allons avoir besoin de creuser un peu plus cette notion de conteneur avant de pouvoir supprimer cette image.
 
 ## Les conteneurs
 
