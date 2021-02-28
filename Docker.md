@@ -48,11 +48,28 @@ Si l'on veut voir la liste de toutes les images dans le cache de notre Docker no
 
 Dans l'exemple ci dessus, on voit qu'il a 4 images.
 Donc nous pouvons lancer chacune de ces applications depuis notre machine sans avoir à les installer.
-Une image est un modèle d'application et la commande ```docker run``` démarre une instance d'application à partir d'un modèle. Ces instances sont les conteneurs.
+Une image est un modèle d'application et la commande ```docker run``` démarre une instance d'application à partir d'un modèle. Ces instances sont appelées des conteneurs.
 
 Pour faire l'analogie avec la programmation orientée objet, on pourrait voir ça comme :
 * l'image docker est une classe
 * le conteneur docker est une instance de cette classe
+
+
+### Commandes utiles à la gestion des images
+
+Pour obtenir la liste des images, on a déja vu ```docker images``` . La commande peut prendre en troisième argument un filtre sur le nom des images à rechercher.  
+Par exemple :  
+![image](uploads/df005ed42541824216b854eefaeb72d4/image.png)
+
+Si on analyse le contenu des différentes informations qui nous sont données
+
+* REPOSITORY  : le nom de l'image Docker, éventuellement préfixée par le nom du repository d'ou elle provient. Dans le cas du Docker hub , il n'y a pas de prefix
+* TAG : généralement la version de l'image, ou pourra également trouvé le mot clé LATEST qui signifie que c'est la dernière version de l'image mise à disposition sur le repository
+* IMAGE ID : Un sha 256 pour cette image.
+* CREATED : La date de création de l'image dans son repository. Ce n'est pas la date à laquelle l'image a été téléchargée sur votre Docker.
+* SIZE : La taille de l'image dans le cache Docker local
+
+
 
 ## Les conteneurs
 
