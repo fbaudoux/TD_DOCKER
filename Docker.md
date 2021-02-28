@@ -1,4 +1,4 @@
-Docker nous permet d'exécuter des applications sur une machine sans avoir besoin de les installer.
+Docker nous permet de démarrer des conteneurs qui exécutent des applications sur une machine sans avoir besoin de les installer.
 
 
 # Les bases
@@ -99,9 +99,27 @@ Nous allons avoir besoin de creuser un peu plus cette notion de conteneur avant 
 
 ## Les conteneurs
 
-Je peux également voir les conteneurs qui sont en cours d'exécution sur ma machine en utilisant :
+Les conteneurs 
+
+Je peux lister les images docker, je dois pouvoir lister les conteneurs qui sont issus de ces images.
+La commande qui permet de lister les conteneurs en cours d'exécution est :
 
 ```docker ps```
+
+![image](uploads/b9a7d968481832a5e9f8bb80f5bb438c/image.png)
+
+* CONTAINER ID : Un sha 256 pour ce conteneur
+* IMAGE        : Le nom de l'image , plus le tag de l'image , séparés un _:_
+* COMMAND      : Le nom de la commande qui est exécuté par le conteur à son démarrage ( le nom de l'application en fait )
+* CREATED      : La date de création du conteneur sur votre machine
+* STATUS       : le cycle de vie ( en cours d'exécution )
+* PORT         : le/les ports exposés par le conteneur 
+* NAMES        : le nom du conteneur
+
+
+
+
+
 
 __Manip1__ : Ou l'on comprend qu'une image est une définition statique
 
