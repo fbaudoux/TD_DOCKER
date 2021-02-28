@@ -396,22 +396,38 @@ https://docs.docker.com/engine/reference/builder/
 
 ### Créons notre propre image
 
+Je suis un grand fan de java, donc je ne peux pas m'empêcher de code le Hello world !
 
 ![image](uploads/adf679ecf37af155a5072fb9819215c2/image.png)
 
+![image](uploads/7f32dc3fa557301ab15d5a16ef71d951/image.png)
+
+Une fois que mon executable est prêt, je peux écrire le Dockerfile en partant d'une image java la plus légère ( alpine )
+
 ```
-FROM openjdk:8-jdk-alpine
+FROM openjdk:15-jdk-alpine
 RUN mkdir /opt/app/
 WORKDIR /opt/app/
-ADD src/main/resources/application.properties /opt/dojo/application.properties
-ENV JAVA_OPTS="-Xmx1024m"
-ENTRYPOINT [ "java", "-jar", "/opt/app/demo.jar" ]
-ADD build/libs/dojo*.jar /opt/dojo/demo.jar
+ADD HelloWorld.class /opt/app/
+ENV JAVA_OPTS="-Xmx20m"
+ENTRYPOINT [ "java", "HelloWorld" ]
 ```
 
+Je peux créer mon image Docker avec la syntaxe
 ```docker build -t nom_image:nom_tag repertoire_du_docker_file```
 
-![image](uploads/7f32dc3fa557301ab15d5a16ef71d951/image.png)
+Ce qui donne dans mon cas
+
+```docker build -t myhello:1.0 .```
+
+![image](uploads/d8d4939e47400dc19d869ceb0a87f03b/image.png)
+
+![image](uploads/26cce7b6c888f9211ada17eb0b05cbb5/image.png)
+
+Je peux désormais exécuter la propre image:  
+
+![image](uploads/81a7e5c87f81580eb233df3a5292ff41/image.png)
+
 
 ## Manipuler plusieurs conteneurs à la fois grâce à compose
 
@@ -422,99 +438,116 @@ Docker a un outil prévu pour cela, il s'agit de docker-compose.
 Cet outil fonctionne avec un fichier de description docker-compose.yml
 
 
-Créons donc un fichier de ce type :
+Nous allons commencer très simplement avec un seul conteneur.
+Je crée le fichier docker-compose.yml
 
 ```
-version: '3'
+version: '3.9'
 services:
-  web:
-   image: nginx:latest
-   ports:
-   - "9090:80"
-
-   volumes:
-   - ./code:/code
-   - ./site.conf:/etc/nginx/conf.d/site.conf
+  myhello:
+   image: myhello:1.0
 ```
 
+![image](uploads/4e365ca427381b44d976c9417a09cedb/image.png)
 
-Les conteneurs peuvent se parler par leur nom et sans mapping des ports ???? 
-C'est la magie de docker-compose.
-
-Vous pouvez ajouter un fichier index.php dans le répertoire code et relance votre docker-compose up,  NGINX doit pouvoir le servir désormais.
-
-![image](uploads/b1aac17fbc18145a81e6c271555c64d8/image.png)
-
-Pour que notre env de développement soit complet, il ne nous manque plus que la base de donnée.
+Ok, on va faire une deuxième version avec un conteneur qui continue de vivre après son lancement
 
 ```
-version: '3'
+version: '3.9'
 services:
-  web:
-   image: nginx:latest
+  apache:
+   image: httpd
    ports:
-   - "9090:80"
-
+     - "80:80"
    volumes:
-   - ./code:/code
-   - ./site.conf:/etc/nginx/conf.d/site.conf
- 
+     - C:\Users\fred\monsite:/usr/local/apache2/htdocs
+```
 
-  php:
-   image: php:7-fpm
+![image](uploads/9f199d7a6fb2778e48cf78e3ef786004/image.png)
+
+J'ajoute une petite base de données MySQL
+
+```
+version: '3.9'
+services:
+  apache:
+   image: httpd
+   ports:
+     - "80:80"
    volumes:
-   - ./code:/code
-
+     - C:\Users\fred\monsite:/usr/local/apache2/htdocs
   db:
    image: mysql:5.6
    environment:
-    MYSQL_ROOT_PASSWORD: example
+    MYSQL_ROOT_PASSWORD: changeme
 ```
 
 Vous noterez au passage l'utilisation de la directive __environment__ dans le fichier docker-compose.
 Cela permet de passez des valeurs à des variables d'environnement connues à l'intérieur du conteneur. Pratique pour la configuration !!
 
+![image](uploads/d01b135295f808f338a1edf0cb246d97/image.png)
 
 
-Moi, je vais utiliser un dernier conteneur qui va me permettre de faire cette vérification 
+Il ne me manque plus qu'un requêteur SQL pour interagir avec ma base. J'ajoute __adminer__
 
 ```
-version: '3'
+version: '3.9'
 services:
-  web:
-   image: nginx:latest
+  apache:
+   image: httpd
    ports:
-   - "9090:80"
-
+     - "80:80"
    volumes:
-   - ./code:/code
-   - ./site.conf:/etc/nginx/conf.d/site.conf
- 
-
-  php:
-   image: php:7-fpm
-   volumes:
-   - ./code:/code
-
+     - C:\Users\fred\monsite:/usr/local/apache2/htdocs
   db:
-    image: mysql:5.6
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-
+   image: mysql:5.6
+   environment:
+    MYSQL_ROOT_PASSWORD: changeme
   adminer:
     image: adminer
     ports:
-      - 9091:8080
-
+      - 8080:8080
 ```
 
-Maintenant que vous savez lire un fichier docker-compose, vous trouverez l'URL qui vous permettra d'accèder à la page de connexion à la base de données.
+Quand je lance le docker compose up , les 3 services démarrent
+![image](uploads/526c2d438c24664ab6c0277fbe00b1f2/image.png)
 
-![image](uploads/96985e7ee470e18b62e17123f3760ccb/image.png)
+J'ai accès à l'interface de __adminer__
+![image](uploads/c9117f61f4656e058c5e9ba0ce52c5f7/image.png)
+
+__adminer__ accède à la base de donnée __mysql__.  Pratique pour le développement !
+![image](uploads/a3b00edd38dcb07e855e06f8e8af512a/image.png)
+
+
+Compose permet de démarrer et arrêter plus conteneurs à la fois, il permet également de créer plusieurs images à la fois à partir des Dockerfile.
+
+Il suffit que dans la définition du service, je déclare une propriété build qui indique ou se trouve le Dockerfile
+
+Exemple :
+
+Si je reprend mon docker-compose.yml avec le service myhello et que je lui ajoute la propriété build précisant ou se trouve le Dockerfile ( en l'occurrence dans le répertoire __java__ qui se situe lui même dans le même répertoire que le docker-compose.yml)
+
+```
+version: '3.9'
+services:
+  myhello:
+   build: ./java
+   image: myhello:1.0
+```
+
+Alors la commande ```docker compose build``` a pour effet de construire toutes les images des services qui ont une propriété __build__.  
+
+![image](uploads/d101d0d76bb3a7ca251f5c09f097b2c6/image.png)
+
+Bilan : Quelque soit la complexité de l'écosystème, on peut le construire et le démarrer avec 2 commandes
+```docker compose build```  
+```docker compose up```
+
 
 ## Utile à savoir 
 
-__Manip3__ : Ou l'on comprend que l'on peut créer une nouvelle image à partir d'un conteneur en cours d'execution
+### Tips1
+On peut créer une nouvelle image à partir d'un conteneur en cours d'exécution
 
 * docker run -ti busybox
 * touch hello.txt
@@ -536,16 +569,12 @@ dans un autre terminal:
 
 On a toujours notre fichier hello.txt
 
-Donc on peut se retrouver avec des dizaines d'images issues d'une même image originelle.
-On va avoir besoin d'un moyen de faire le ménage.
-
-* docker rmi "Id de l'image"
-
-__Manip4__ : Ou l'on découvre comment qu'un repository n'est pas obligatoire
-* docker save --output mybusybox.tar mybusybox
-* docker rmi mybusybox
-* docker images | grep busy
-* docker load --input mybusybox.tar
-* docker images | grep busy
+### Tips2
+On peut exporter des images dans une archive 
+``` docker save --output mybusybox.tar mybusybox```
+```docker rmi mybusybox```
+```docker images | grep busy```
+```docker load --input mybusybox.tar```
+```docker images | grep busy```
 
 
