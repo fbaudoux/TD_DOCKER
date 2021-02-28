@@ -99,8 +99,6 @@ Nous allons avoir besoin de creuser un peu plus cette notion de conteneur avant 
 
 ## Les conteneurs
 
-Les conteneurs 
-
 Je peux lister les images docker, je dois pouvoir lister les conteneurs qui sont issus de ces images.
 La commande qui permet de lister les conteneurs en cours d'exécution est :
 
@@ -117,8 +115,28 @@ La commande qui permet de lister les conteneurs en cours d'exécution est :
 * NAMES        : le nom du conteneur
 
 
+Pourquoi je n'ai rien dans la liste ? Pourtant j'ai lancé un conteneur Hello World !
 
+En réalité, le conteneur a démarré, il a lancé la commande lui permettant d'exécuter l'application et ... 
+l'application s'est terminée. 
+L'application Hello World affiche juste un texte puis se termine donc le conteneur avait terminé son travail, il s'est stoppé.
 
+Pourquoi je ne peux pas supprimer l'image Hello World si il n'y a plus de conteneur actif pour cette image ?
+
+C'est parce que le conteneur existe toujours, d'ailleurs on peut le voir en exécutant la commande :  
+
+```docker ps -a```
+
+![image](uploads/49e01c8575933b1df79301fcdb95f02b/image.png)
+
+A quoi ça sert de garder un conteneur stoppé ?
+
+En premier lieu, cela sert pour l'analyse des logs.
+Un conteneur arrêté peut l'être à cause d'un crash de l'application et il faut être en mesure d'analyser ce qui a causé le crash.
+
+La commande ```docker logs ID_CONTENEUR``` nous permet d'accéder aux logs d'un conteneur
+
+![image](uploads/03c168868cfd38976eb71838bca43361/image.png)
 
 
 __Manip1__ : Ou l'on comprend qu'une image est une définition statique
