@@ -1,0 +1,323 @@
+#Docker
+
+Docker nous permet d'executer des applications localement sans avoir besoin de les installer.
+Il nous suffit de lui demander de lancer un conteneur pour cette application.
+
+* docker run hello-world
+
+Pour lancer ce conteneur, docker a besoin de l'image "hello-world", si il ne la trouve pas, il va la télécharger dans un repository.
+Le repository par défaut est appelé le docker hub. 
+
+
+![image](uploads/2400b429ab3182a4f2965db9f201737c/image.png)
+
+Si je lance une seconde fois, la même commande, que se passe t il ?
+
+![image](uploads/384165f469b44aa22b00925c44840274/image.png)
+
+L'image n'est pas téléchargée à nouveau, cela signifie que Docker possède une liste d'images en local.
+
+Via docker info, on va savoir combien d'images différentes notre docker a à sa disposition
+* docker info  
+![image](uploads/2aafd09e9ff08ff5bb3ae54d2574a925/image.png)
+
+Si l'on veut voir la liste de toutes ces images, nous avons la commande:
+* docker images
+
+Donc nous pouvons lancer toutes ces applications depuis notre machine sans avoir à les installer.
+
+Je peux également voir les conteneurs qui sont en cours d'execution sur ma machine en utilisant :
+
+* docker ps
+
+__Manip1__ : Ou l'on comprend qu'une image est une définition statique
+
+* docker run -ti busybox 
+* ls 
+* rm -rf bin 
+* ls 
+
+-> Notre conteneur est inutilisable
+
+* exit 
+* docker run -ti busybox 
+* ls
+
+
+__Manip2__ : Ou l'on comprend qu'un conteneur arrêté n'est pas supprimé
+
+* docker ps -a  | grep busy
+
+On retrouve nos conteneurs busybox et on voit qu'ils sont arrêtés
+Mais on peut toujours accéder aux logs en faisant
+
+* docker logs "Id du conteneur"
+
+On comprend bien l'interet pour faire des analyses après l'arrêt d'un conteneur, mais il nous faut toutefois un moyen de faire le ménage.
+
+* docker rm "Id du conteneur" va nous permettre de supprimer définitivement le conteneur
+
+On peut également décider au moment du lancement que le conteneur devra être supprimé dès qu'il s'arrête
+
+* docker run -rm -ti busybox 
+* touch youpi.txt
+* exit
+
+On ne retrouve pas de trace de ce conteneur via docker ps.
+
+__Manip3__ : Ou l'on comprend que l'on peut créer une nouvelle image à partir d'un conteneur en cours d'execution
+
+* docker run -ti busybox
+* touch hello.txt
+
+dans un autre terminal:
+
+* docker ps
+![image](uploads/282e24bd3f6a42adeecc38b205cb7317/image.png)
+
+* docker diff "container id"
+-> on voit les différences entre le conteneur et l'image sur laquelle il est basé
+
+* docker commit "container id" mybusybox
+* docker images 
+![image](uploads/136298577018f12f389391c8c266d430/image.png)
+
+* docker run -ti mybusybox
+* ls
+
+On a toujours notre fichier hello.txt
+
+Donc on peut se retrouver avec des dizaines d'images issues d'une même image originelle.
+On va avoir besoin d'un moyen de faire le ménage.
+
+* docker rmi "Id de l'image"
+
+__Manip4__ : Ou l'on découvre comment qu'un repository n'est pas obligatoire
+* docker save --output mybusybox.tar mybusybox
+* docker rmi mybusybox
+* docker images | grep busy
+* docker load --input mybusybox.tar
+* docker images | grep busy
+
+
+Nous aurons peut être besoin de cette façon de procéder si le rsx de l'IUT ne nous aide pas pour la suite de ce td :-) 
+
+Passons à quelque chose de plus utile, nous allons démarrer un serveur Web sous docker.
+Nous utiliserons le serveur Web NGINX.
+Rendons nous sur le site du docker hub et trouvons le nom de l'image d'un serveur NGINX.
+
+* docker run nginx 
+Pour ne pas bloquer notre terminal, on va même faire un docker run -d nginx. Cela aura pour effet de lancer le conteneur en tache de fond ( -d pour daemon ) et de nous rendre la main.
+On pourra vérifier que le container nginx est bien en cours d'execution via la commande __docker ps__
+
+![image](uploads/3829e41b4a26a5c56151097a52d82b3d/image.png)
+
+On peut d'ailleurs voir en sortie de cette commande que nginx utilise le port 80 ( normal pour un serveur Web )
+
+Donc si je lance mon navigateur sur http://localhost:80 ou http://127.0.0.1:80, je devrais avoir la page d'accueil de NGINX ?  Non , pourquoi cela ?
+
+__Manip5__: mapper les ports
+
+Les conteneurs sont isolés de la machine hote. Si l'on veut pouvoir accèder à un conteneur depuis une machine, il faut déclarer un mapping entre un port de la machine hote et un port du conteneur.
+
+* docker run -p 80:80 nginx
+
+Cette fois http://localhost:80 doit nous répondre par la page d'accueil de NGINX.
+
+Est ce que je pourrais lancer 2 fois le conteneur NGINX sur ma machine ?
+
+__Manip6__: mapper les volumes
+
+Pratique ce serveur Web sans installation, mais il ne diffuse que la page par défaut.
+Je voudrais lui faire diffuser ma propre page.
+
+ok , on peut se connecter au conteneur, trouver ou se situent les pages et modifier la page
+
+* docker exec -ti "id conteneur" bash
+
+Par defaut, NGINX va diffuser les fichiers qui se situent ici : /usr/share/nginx/html
+Il y a un fichier index.html, on peut l'éditer. .... non, il n'y a pas d'éditeur disponible sur le conteneur
+On peut remplacer le fichier index.html par le notre
+
+* docker cp "fichier local"   "id conteneur":"chemin fichier sur le conteneur"
+
+Franchement, pour le développement ce n'est pas pratique, je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
+
+De la même manière que l'on peut mapper un port de la machine hote avec un port du conteneur, on peut mapper un répertoire de la machine hote avec un repertoire du conteneur.
+
+* docker run --rm -d -p 80:80 -v "/home/fred/test/html":"/usr/share/nginx/html" nginx
+
+Cette fois cela fonctionne de façon assez pratique !
+ 
+Manip7: Compose
+
+Par contre la ligne de commande commence à devenir un peu complexe.
+Si l'on veut un environnement avec un serveur Web + PHP + Base de données, on va devoir faire des scripts...
+En plus si une page PHP située dans un conteneur veut accèder à la base de donnée qui est dans un autre conteneur comment va t on les connecter ? 
+
+Docker a un outil prévu pour cela, il s'agit de docker-compose.
+Cet outil fonctionne avec un fichier de description docker-compose.yml
+Créons donc un fichier de ce type :
+
+```
+version: '3'
+services:
+  web:
+   image: nginx:latest
+   ports:
+   - "9090:80"
+
+   volumes:
+   - ./code:/code
+   - ./site.conf:/etc/nginx/conf.d/site.conf
+```
+
+C'est quoi ce site.conf ?
+C'est un fichier de configuration pour NGINX, on va arrêter d'utiliser le fichier de conf par défaut car on va établir une liaison vers un conteneur PHP.
+Mais pour le moment, gardons le très simple
+
+```
+server {
+    index index.html;
+    server_name local.dev;
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+    root /code;
+}
+```
+On peut déja vérifier que NGINX se lance bien.
+
+* docker-compose up
+
+Il faut modifier le fichier /etc/hosts de la machine hote pour que "local.dev" soit résolu par 127.0.0.1
+Ensuite lancer un navigateur sur http://local.dev:9090
+
+
+Maintenant, on peut relier NGINX à PHP.
+D'abord, on va démarrer un conteneur qui gère le PHP et on va lui donner accès à notre code source :
+
+```
+version: '3'
+services:
+  web:
+   image: nginx:latest
+   ports:
+   - "9090:80"
+
+   volumes:
+   - ./code:/code
+   - ./site.conf:/etc/nginx/conf.d/site.conf
+ 
+
+  php:
+   image: php:7-fpm
+   volumes:
+   - ./code:/code
+```
+
+Ensuite on peut configurer NGINX pour utiliser le conteneur php.
+Comment je fais pour savoir quel est le port d'écoute du conteneur php ?
+
+Cela se fait dans le fichier site.conf
+
+```
+server {
+    index index.php index.html;
+    server_name local.dev;
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+    root /code;
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+}
+```
+
+La ligne la plus importante est "fastcgi_pass php:9000;"  car elle signifie que NGINX va déléguer le traitement des scripts php à une machine nommée php sur le port 9000.
+
+Les conteneurs peuvent se parler par leur nom et sans mapping des ports ???? 
+C'est la magie de docker-compose.
+
+Vous pouvez ajouter un fichier index.php dans le répertoire code et relance votre docker-compose up,  NGINX doit pouvoir le servir désormais.
+
+![image](uploads/b1aac17fbc18145a81e6c271555c64d8/image.png)
+
+Pour que notre env de développement soit complet, il ne nous manque plus que la base de donnée.
+
+```
+version: '3'
+services:
+  web:
+   image: nginx:latest
+   ports:
+   - "9090:80"
+
+   volumes:
+   - ./code:/code
+   - ./site.conf:/etc/nginx/conf.d/site.conf
+ 
+
+  php:
+   image: php:7-fpm
+   volumes:
+   - ./code:/code
+
+  db:
+   image: mysql:5.6
+   environment:
+    MYSQL_ROOT_PASSWORD: example
+```
+
+Vous noterez au passage l'utilisation de la directive __environment__ dans le fichier docker-compose.
+Cela permet de passez des valeurs à des variables d'environnement connues à l'intérieur du conteneur. Pratique pour la configuration !!
+
+Comme je ne sais pas coder en php , je ne sais pas comment faire une page php qui se connecte à la base de données.
+Mais vous pouvez la faire !
+
+Moi, je vais utiliser un dernier conteneur qui va me permettre de faire cette vérification 
+
+```
+version: '3'
+services:
+  web:
+   image: nginx:latest
+   ports:
+   - "9090:80"
+
+   volumes:
+   - ./code:/code
+   - ./site.conf:/etc/nginx/conf.d/site.conf
+ 
+
+  php:
+   image: php:7-fpm
+   volumes:
+   - ./code:/code
+
+  db:
+    image: mysql:5.6
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  adminer:
+    image: adminer
+    ports:
+      - 9091:8080
+
+```
+
+Maintenant que vous savez lire un fichier docker-compose, vous trouverez l'URL qui vous permettra d'accèder à la page de connexion à la base de données.
+
+![image](uploads/96985e7ee470e18b62e17123f3760ccb/image.png)
+
+Vous serez également en mesure d'analyser les fichiers qui vous ont été fournis pour vos projets précédents et d'enfin les comprendre :-)  
+
+
+ 
