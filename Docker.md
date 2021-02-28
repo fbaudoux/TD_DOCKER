@@ -251,60 +251,100 @@ Si je relance un conteneur, je vais retrouver mon fichier
 ![image](uploads/c47339f051d1f3b933d7c5294ed056c3/image.png)
 
 
-#### Lancer un conteneur en mode daemon
+#### Lancer un conteneur de la vraie vie
 
 Jusqu'à présent, nous avons utilisés des conteneurs qui se terminaient d'eux même et qui ne faisaient pas grand chose. Il est temps de passer à des à quelque chose de plus utile, nous allons démarrer un serveur Web sous docker.
-Nous utiliserons le serveur Web NGINX.
-Rendons nous sur le site du docker hub et trouvons le nom de l'image d'un serveur NGINX.
+Nous utiliserons le serveur Web Apache httpd.
+Rendons nous sur le site du docker hub et trouvons le nom de l'image
 
-* docker run nginx 
-Pour ne pas bloquer notre terminal, on va même faire un docker run -d nginx. Cela aura pour effet de lancer le conteneur en tache de fond ( -d pour daemon ) et de nous rendre la main.
-On pourra vérifier que le container nginx est bien en cours d'execution via la commande __docker ps__
+![image](uploads/b00abba13f300b0a86b05324f15b9ec2/image.png)
 
-![image](uploads/3829e41b4a26a5c56151097a52d82b3d/image.png)
 
-On peut d'ailleurs voir en sortie de cette commande que nginx utilise le port 80 ( normal pour un serveur Web )
+```docker run httpd``` 
 
-Donc si je lance mon navigateur sur http://localhost:80 ou http://127.0.0.1:80, je devrais avoir la page d'accueil de NGINX ?  Non , pourquoi cela ?
+![image](uploads/e73f15c3d8858ef54476d88294ed44b2/image.png)
 
-__Manip5__: mapper les ports
+Première constatation, mon terminal de commande est bloqué. Je dois en ouvrir un autre pour trouver le port exposé par mon conteneur
 
-Les conteneurs sont isolés de la machine hote. Si l'on veut pouvoir accèder à un conteneur depuis une machine, il faut déclarer un mapping entre un port de la machine hote et un port du conteneur.
+![image](uploads/dfd4496c705b1f9afcca6a9d36c33071/image.png)
 
-* docker run -p 80:80 nginx
+Il est donc indiqué que le conteneur utilise le port 80
 
-Cette fois http://localhost:80 doit nous répondre par la page d'accueil de NGINX.
+Mais comment je peux accèder à ce port 80 ? Je ne connais pas l'adresse IP du conteneur. 
+Si je tente d'accéder à http://localhost:80 , je suis en erreur
 
-Est ce que je pourrais lancer 2 fois le conteneur NGINX sur ma machine ?
+![image](uploads/9a34815449c0913a0cf32e7bb17e7446/image.png)
 
-__Manip6__: mapper les volumes
+##### Mapper les ports
+En réalité, les conteneurs sont isolés de la machine hôte. Si l'on veut pouvoir accéder à un conteneur depuis une machine, il faut déclarer un mapping entre un port de la machine hôte et un port du conteneur.
+
+La syntaxe est :
+
+```docker run -p "port local":"port dans le conteneur" nom_de_l_image```
+
+Donc je dois stopper mon conteneur et en relancer un avec ce mapping de port.
+
+Pour stopper mon conteneur, je peux utiliser la commande :
+```docker stop ID_CONTENEUR```
+
+Pour le stopper et le supprimer, je peux utiliser la commande :
+
+```docker rm -f ID_CONTENEUR```
+
+
+Lorsque je relance le conteneur, je vais ajouter quelques options à la ligne de commande.
+L'option --rm  indique que si le conteneur est stoppé, je veux le supprimer
+L'option -d indique que je veux lancer le conteneur en mode daemon, c'est à dire que je ne veux pas qu'il bloque mon terminal de commande.
+
+Je relance donc avec :
+
+```docker run -p 80:80  --rm -d httpd``` 
+
+![image](uploads/4807b262eaabb1fe905510224d01e216/image.png)
+
+On peut voir que le port indique maintenant 0.0.0.0:80 -> 80/tcp  , la redirection de port est donc en place
+
+Donc si je lance mon navigateur sur http://localhost:80 ou http://127.0.0.1:80, j'obtiens :
+
+![image](uploads/ebbf177b55ae54e95bccbaccd5c166aa/image.png)
+
+![image](uploads/8f5beb339371e2bca27e39cf6331d22f/image.png)
+
+
+##### Mapper les volumes
 
 Pratique ce serveur Web sans installation, mais il ne diffuse que la page par défaut.
 Je voudrais lui faire diffuser ma propre page.
 
 ok , on peut se connecter au conteneur, trouver ou se situent les pages et modifier la page
+Comme il est lancé en mode daemon, pour obtenir un terminal interactif, je peux utiliser :
+```docker exec -ti "id conteneur" bash```
 
-* docker exec -ti "id conteneur" bash
+Si le conteneur dispose d'un shell bash cela va fonctionner ( on peut aussi essayer avec sh )
 
-Par defaut, NGINX va diffuser les fichiers qui se situent ici : /usr/share/nginx/html
+![image](uploads/a819f97695e6b0069841f9925b2c020c/image.png)
+
+Par defaut, http va diffuser les fichiers qui se situent ici : /usr/local/apache2/htdocs
 Il y a un fichier index.html, on peut l'éditer. .... non, il n'y a pas d'éditeur disponible sur le conteneur
-On peut remplacer le fichier index.html par le notre
+On peut créer un fichier en local et le copier dans le conteneur pour remplacer le fichier index.html
 
-* docker cp "fichier local"   "id conteneur":"chemin fichier sur le conteneur"
+```docker cp "fichier local"   "id conteneur":"chemin fichier sur le conteneur"```
 
 Franchement, pour le développement ce n'est pas pratique, je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
 
-De la même manière que l'on peut mapper un port de la machine hote avec un port du conteneur, on peut mapper un répertoire de la machine hote avec un repertoire du conteneur.
+De la même manière que l'on peut mapper un port de la machine hôte avec un port du conteneur, on peut mapper un répertoire de la machine hôte avec un répertoire du conteneur.
 
-* docker run --rm -d -p 80:80 -v "/home/fred/test/html":"/usr/share/nginx/html" nginx
+```docker run -p 80:80 -v "C:\Users\fred\monsite":"/usr/local/apache2/htdocs"  --rm -d httpd```
 
 Cette fois cela fonctionne de façon assez pratique !
+
+![image](uploads/aaa13bdf49726bdf0594ffb9312fcd74/image.png)
  
 Manip7: Compose
 
 Par contre la ligne de commande commence à devenir un peu complexe.
 Si l'on veut un environnement avec un serveur Web + PHP + Base de données, on va devoir faire des scripts...
-En plus si une page PHP située dans un conteneur veut accèder à la base de donnée qui est dans un autre conteneur comment va t on les connecter ? 
+En plus si une page PHP située dans un conteneur veut accéder à la base de donnée qui est dans un autre conteneur comment va t on les connecter ? 
 
 Docker a un outil prévu pour cela, il s'agit de docker-compose.
 Cet outil fonctionne avec un fichier de description docker-compose.yml
