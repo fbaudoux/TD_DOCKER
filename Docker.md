@@ -275,7 +275,7 @@ Si je tente d'accéder à http://localhost:80 , je suis en erreur
 
 ![image](uploads/9a34815449c0913a0cf32e7bb17e7446/image.png)
 
-##### Mapper les ports
+#### Mapper les ports
 En réalité, les conteneurs sont isolés de la machine hôte. Si l'on veut pouvoir accéder à un conteneur depuis une machine, il faut déclarer un mapping entre un port de la machine hôte et un port du conteneur.
 
 La syntaxe est :
@@ -310,8 +310,7 @@ Donc si je lance mon navigateur sur http://localhost:80 ou http://127.0.0.1:80, 
 
 ![image](uploads/8f5beb339371e2bca27e39cf6331d22f/image.png)
 
-
-##### Mapper les volumes
+#### Mapper les volumes
 
 Pratique ce serveur Web sans installation, mais il ne diffuse que la page par défaut.
 Je voudrais lui faire diffuser ma propre page.
@@ -330,7 +329,7 @@ On peut créer un fichier en local et le copier dans le conteneur pour remplacer
 
 ```docker cp "fichier local"   "id conteneur":"chemin fichier sur le conteneur"```
 
-Franchement, pour le développement ce n'est pas pratique, je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
+Franchement, pour le développement ce n'est pas pratique.Je ne vais pas faire une copie à chaque fois que je vais modifier mes pages html. On doit pouvoir faire mieux.
 
 De la même manière que l'on peut mapper un port de la machine hôte avec un port du conteneur, on peut mapper un répertoire de la machine hôte avec un répertoire du conteneur.
 
@@ -339,15 +338,22 @@ De la même manière que l'on peut mapper un port de la machine hôte avec un po
 Cette fois cela fonctionne de façon assez pratique !
 
 ![image](uploads/aaa13bdf49726bdf0594ffb9312fcd74/image.png)
- 
-Manip7: Compose
 
-Par contre la ligne de commande commence à devenir un peu complexe.
-Si l'on veut un environnement avec un serveur Web + PHP + Base de données, on va devoir faire des scripts...
-En plus si une page PHP située dans un conteneur veut accéder à la base de donnée qui est dans un autre conteneur comment va t on les connecter ? 
+## Faire communiquer les conteneurs entre eux
+
+
+
+## Construire sa propre image Docker
+
+## Manipuler plusieurs conteneurs à la fois grâce à compose
+
+Mapper les ports, mapper les volumes, préciser les liens de communication entre les conteneurs, ...
+Cela commence à faire à devenir un peu complexe surtout si l'on veut démarrer un ecosystème un peu élaboré ou l'on trouve par exemple : serveur web + serveur applicatif + base de données ....
 
 Docker a un outil prévu pour cela, il s'agit de docker-compose.
 Cet outil fonctionne avec un fichier de description docker-compose.yml
+
+
 Créons donc un fichier de ce type :
 
 ```
@@ -363,75 +369,6 @@ services:
    - ./site.conf:/etc/nginx/conf.d/site.conf
 ```
 
-C'est quoi ce site.conf ?
-C'est un fichier de configuration pour NGINX, on va arrêter d'utiliser le fichier de conf par défaut car on va établir une liaison vers un conteneur PHP.
-Mais pour le moment, gardons le très simple
-
-```
-server {
-    index index.html;
-    server_name local.dev;
-    error_log  /var/log/nginx/error.log;
-    access_log /var/log/nginx/access.log;
-    root /code;
-}
-```
-On peut déja vérifier que NGINX se lance bien.
-
-* docker-compose up
-
-Il faut modifier le fichier /etc/hosts de la machine hote pour que "local.dev" soit résolu par 127.0.0.1
-Ensuite lancer un navigateur sur http://local.dev:9090
-
-
-Maintenant, on peut relier NGINX à PHP.
-D'abord, on va démarrer un conteneur qui gère le PHP et on va lui donner accès à notre code source :
-
-```
-version: '3'
-services:
-  web:
-   image: nginx:latest
-   ports:
-   - "9090:80"
-
-   volumes:
-   - ./code:/code
-   - ./site.conf:/etc/nginx/conf.d/site.conf
- 
-
-  php:
-   image: php:7-fpm
-   volumes:
-   - ./code:/code
-```
-
-Ensuite on peut configurer NGINX pour utiliser le conteneur php.
-Comment je fais pour savoir quel est le port d'écoute du conteneur php ?
-
-Cela se fait dans le fichier site.conf
-
-```
-server {
-    index index.php index.html;
-    server_name local.dev;
-    error_log  /var/log/nginx/error.log;
-    access_log /var/log/nginx/access.log;
-    root /code;
-
-    location ~ \.php$ {
-        try_files $uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass php:9000;
-        fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
-    }
-}
-```
-
-La ligne la plus importante est "fastcgi_pass php:9000;"  car elle signifie que NGINX va déléguer le traitement des scripts php à une machine nommée php sur le port 9000.
 
 Les conteneurs peuvent se parler par leur nom et sans mapping des ports ???? 
 C'est la magie de docker-compose.
@@ -469,8 +406,7 @@ services:
 Vous noterez au passage l'utilisation de la directive __environment__ dans le fichier docker-compose.
 Cela permet de passez des valeurs à des variables d'environnement connues à l'intérieur du conteneur. Pratique pour la configuration !!
 
-Comme je ne sais pas coder en php , je ne sais pas comment faire une page php qui se connecte à la base de données.
-Mais vous pouvez la faire !
+
 
 Moi, je vais utiliser un dernier conteneur qui va me permettre de faire cette vérification 
 
@@ -507,9 +443,6 @@ services:
 Maintenant que vous savez lire un fichier docker-compose, vous trouverez l'URL qui vous permettra d'accèder à la page de connexion à la base de données.
 
 ![image](uploads/96985e7ee470e18b62e17123f3760ccb/image.png)
-
-Vous serez également en mesure d'analyser les fichiers qui vous ont été fournis pour vos projets précédents et d'enfin les comprendre :-)  
-
 
 ## Utile à savoir 
 
