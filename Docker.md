@@ -387,9 +387,14 @@ La seconde directive indique qu'il faut copier le fichier hello à la racine du 
 Le troisième directive indique que la commande qui sera lancée au démarrage d'un conteneur sera Hello
 
 
-Quelques directives intéressantes :    
+En plus de FROM , COPY ,et CMD , voici quelques directives intéressantes :    
 
+* RUN :  permet d'exécuter une commande pendant la construction de l'image
+* EXPOSE : permet de préciser quels sont les ports écoutés par les conteneurs issus de cette image
 
+https://docs.docker.com/engine/reference/builder/
+
+![image](uploads/2e4540611a3d81ad454aaa9537a9bb2d/image.png)
 
 
 ## Manipuler plusieurs conteneurs à la fois grâce à compose
