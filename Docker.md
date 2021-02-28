@@ -139,6 +139,14 @@ La commande ```docker logs ID_CONTENEUR``` nous permet d'accéder aux logs d'un 
 ![image](uploads/03c168868cfd38976eb71838bca43361/image.png)
 
 
+Si l'analyse de logs ne suffit pas , on peut même redémarrer un conteneur stoppé grâce à :  
+```docker start ID_CONTENEUR```
+
+Il est à noter que contrairement à ```docker run``` , ```docker start``` démarre un conteneur en mode daemon et on ne voit donc pas le résultat sur la sortie standard
+
+
+
+
 __Manip1__ : Ou l'on comprend qu'une image est une définition statique
 
 * docker run -ti busybox 
