@@ -3,7 +3,7 @@ Docker nous permet d'exécuter des applications sur une machine sans avoir besoi
 
 # Les bases
 
-Commençons comme tout bon informaticien par lancer le hello-world.
+Commençons, comme tout bon informaticien, par lancer le hello-world.
 Avec Docker cela revient à écrire quelque chose comme:
 
 ```docker run hello-world```
@@ -19,7 +19,8 @@ Le repository par défaut est le docker hub.
 Le docker hub dispose d'un site web qui permet de rechercher toutes les images mises à disposition.  
 https://hub.docker.com/
 
-Mais revenons à l'exécution de notre Hello world.
+Mais revenons à l'exécution de notre Hello world.  
+On voit sur les 5 premières lignes, le téléchargement de l'image depuis le repository.  
 ![image](uploads/05ff35c9431efcc7e79351b86991b098/image.png)
 
 Si je lance une seconde fois, la même commande, que se passe t il ?
@@ -34,10 +35,26 @@ Nous pouvons savoir combien d'images différentes notre docker local a dans son 
 
 ![image](uploads/d73a05276f71d1f95d9737fefc48e24e/image.png)
 
-Si l'on veut voir la liste de toutes ces images, nous avons la commande:  
+On comprend en regardant ces infos que les images et les conteneurs sont 2 notions différentes pour Docker, et que ces notions n'ont pas le même cycle de vie puisque les conteneurs semblent pouvoir avoir plusieurs états ( running,paused,stopped )
+
+Nous allons donc réaliser quelques manipulations pour bien comprendre ces notions. 
+
+## Les images 
+
+Si l'on veut voir la liste de toutes les images dans le cache de notre Docker nous avons la commande:  
 ```docker images```
 
-Donc nous pouvons lancer toutes ces applications depuis notre machine sans avoir à les installer.
+![image](uploads/caa7d48375fe63ab7a0115235b73d9dd/image.png)
+
+Dans l'exemple ci dessus, on voit qu'il a 4 images.
+Donc nous pouvons lancer chacune de ces applications depuis notre machine sans avoir à les installer.
+Une image est un modèle d'application et la commande ```docker run``` démarre une instance d'application à partir d'un modèle. Ces instances sont les conteneurs.
+
+Pour faire l'analogie avec la programmation orientée objet, on pourrait voir ça comme :
+* l'image docker est une classe
+* le conteneur docker est une instance de cette classe
+
+## Les conteneurs
 
 Je peux également voir les conteneurs qui sont en cours d'exécution sur ma machine en utilisant :
 
