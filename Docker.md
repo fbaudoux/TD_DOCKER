@@ -57,6 +57,7 @@ Pour faire l'analogie avec la programmation orientée objet, on pourrait voir ç
 
 ### Commandes utiles à la gestion des images
 
+#### Lister les images 
 Pour obtenir la liste des images, on a déja vu ```docker images``` . La commande peut prendre en troisième argument un filtre sur le nom des images à rechercher.  
 Par exemple :  
 ![image](uploads/df005ed42541824216b854eefaeb72d4/image.png)
@@ -68,6 +69,30 @@ Si on analyse le contenu des différentes informations qui nous sont données
 * IMAGE ID : Un sha 256 pour cette image.
 * CREATED : La date de création de l'image dans son repository. Ce n'est pas la date à laquelle l'image a été téléchargée sur votre Docker.
 * SIZE : La taille de l'image dans le cache Docker local
+
+Pourquoi, il y a un IMAGE ID alors qu'on a déjà un REPOSITORY et un TAG ?  
+Les images peuvent être construites localement ( on verra cela par la suite ), et si l'on construit plusieurs fois la même image, on peut se retrouver avec des situations comme la suivante :  
+![image](uploads/fcc16239a24eff697ec7bccd29cf06fb/image.png)
+
+Avant de construire une image satisfaisante du logiciel(celle qui a le tag develop-snapshot), j'ai construit 4 images du même logiciel qui ont des sha256 différent.
+
+
+#### Supprimer les images 
+
+La syntaxe pour la suppression d'une image :
+
+```docker rmi IMAGE ID```
+
+D'ailleurs l'image de Hello World ne m'est plus utile, je veux la supprimer
+
+```docker images Hello*```   , pour récuperer l' ID
+![image](uploads/68a2146e9495563f0faefee418c9ed62/image.png)
+
+
+```docker rmi XXXXXXXXX``` pour la suppression  
+
+![image](uploads/cb51d1dd8a5f338bdf1a8bfef9c21cc1/image.png)
+
 
 
 
