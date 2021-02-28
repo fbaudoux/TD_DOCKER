@@ -394,8 +394,24 @@ En plus de FROM , COPY ,et CMD , voici quelques directives intéressantes :
 
 https://docs.docker.com/engine/reference/builder/
 
-![image](uploads/2e4540611a3d81ad454aaa9537a9bb2d/image.png)
+### Créons notre propre image
 
+
+![image](uploads/adf679ecf37af155a5072fb9819215c2/image.png)
+
+```
+FROM openjdk:8-jdk-alpine
+RUN mkdir /opt/app/
+WORKDIR /opt/app/
+ADD src/main/resources/application.properties /opt/dojo/application.properties
+ENV JAVA_OPTS="-Xmx1024m"
+ENTRYPOINT [ "java", "-jar", "/opt/app/demo.jar" ]
+ADD build/libs/dojo*.jar /opt/dojo/demo.jar
+```
+
+```docker build -t nom_image:nom_tag repertoire_du_docker_file```
+
+![image](uploads/7f32dc3fa557301ab15d5a16ef71d951/image.png)
 
 ## Manipuler plusieurs conteneurs à la fois grâce à compose
 
